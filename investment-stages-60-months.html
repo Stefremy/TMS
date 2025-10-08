@@ -13,9 +13,18 @@
         /* Assumptions panel styling */
         .assumptions { background: linear-gradient(180deg,#ffffff,#fbfcff); padding:12px 14px; border-radius:10px; border:1px solid rgba(2,6,23,0.04); box-shadow: 0 8px 20px rgba(15,23,42,0.03); }
         .assumptions h3{ margin:0 0 8px 0; font-size:1.02rem; color:#0b1220 }
-        .assumptions-grid{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-        .assumptions-grid label{ display:flex; align-items:center; gap:8px; background:transparent; padding:6px 8px; border-radius:8px; transition: transform .12s ease, box-shadow .12s ease; }
-        .assumptions-grid label:hover{ transform: translateY(-3px); box-shadow: 0 8px 20px rgba(2,6,23,0.05); }
+    /* assumptions layout: grouped and responsive grid */
+    .assumptions-grid{ display:grid; grid-template-columns: repeat(2, minmax(220px,1fr)); gap:10px; align-items:start; }
+    .ass-group { background: transparent; padding:8px; border-radius:10px; }
+    .ass-group strong { display:block; margin-bottom:6px; color:#0f172a; font-size:0.95rem; }
+    .assumptions-grid label{ display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:8px; transition: transform .12s ease, box-shadow .12s ease; }
+    .assumptions-grid label:hover{ transform: translateY(-3px); box-shadow: 0 8px 20px rgba(2,6,23,0.05); }
+        /* collapsible group styles */
+        .ass-group .collapse-btn{ background:transparent; border:0; font-weight:700; float:right; cursor:pointer; color:#334155; margin-left:8px; }
+        .ass-group .help-text{ margin:6px 0 8px 0; color:#475569; font-size:0.88rem; }
+        .ass-group .group-body{ transition: max-height 0.22s ease, opacity 0.2s linear; overflow:hidden; }
+        .ass-group.collapsed .group-body{ max-height:0 !important; opacity:0; padding:0; margin:0; }
+        .ass-group .group-body label{ display:block; margin-bottom:6px; }
         .assumptions-grid input[type="number"]{ width:110px; padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,42,0.08); background: white; font-weight:700; text-align:right; }
         .assumptions-grid input[type="checkbox"]{ width:auto; transform:scale(1.05); }
         .assumptions-grid label small{ color:#475569; display:block; font-size:0.78rem; }
@@ -108,12 +117,12 @@
 
         #all-error { display:none; }
         @media print { .topbar, .btn { display:none; } }
-    /* logo area (centered) — tightened spacing so it doesn't push content down */
-    .page-logo { display:flex; justify-content:center; margin: 4px 0 6px 0; }
-    .page-logo a { display:inline-block; line-height:1; }
-    .page-logo img#top-logo { height:56px; width:auto; display:block; filter: drop-shadow(0 6px 16px rgba(2,6,23,0.06)); }
-    @media (max-width:520px){ .page-logo img#top-logo { height:44px; } }
-    @media print { .page-logo { display:none; } }
+    /* logo area (moved to topbar) */
+    .page-logo-left { display:inline-flex; align-items:center; margin-left:6px; }
+    .page-logo-left a { display:inline-block; line-height:1; }
+    .page-logo-left img#top-logo { height:40px; width:auto; display:block; filter: drop-shadow(0 6px 16px rgba(2,6,23,0.06)); }
+    @media (max-width:520px){ .page-logo-left img#top-logo { height:34px; } }
+    @media print { .page-logo-left { display:none; } }
     /* fixed-cost tooltip styling */
     .fixed-cell { position:relative; cursor:help; }
     .fixed-cell:hover::after{
@@ -220,18 +229,20 @@
     <body>
         <div class="container">
             <div class="topbar">
-                <button class="btn active" id="btn-all">All in One</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button class="btn active" id="btn-all">SaaS</button>
+                    <div class="page-logo-left" aria-hidden="true">
+                        <a href="https://www.linke.pt" target="_blank" rel="noopener noreferrer" aria-label="Link to linke.pt">
+                            <img src="noBgColor (1).png" alt="Logo" id="top-logo">
+                        </a>
+                    </div>
+                </div>
                 <div style="flex:1"></div>
+                <button class="btn" id="btn-view-allinone" title="Ver All in One">All in One</button>
+                <button class="btn" id="btn-view-tms" title="Ver TMS">TMS</button>
                 <button class="btn" id="btn-compact" title="Mostrar resumos compactos">Compact</button>
                 <button class="btn" id="btn-prominent" title="Mostrar resumos em destaque">Prominent</button>
                 <button class="btn" id="btn-print">Imprimir / Salvar PDF</button>
-            </div>
-
-            <!-- centered logo -->
-            <div class="page-logo" aria-hidden="true">
-                <a href="https://www.linke.pt" target="_blank" rel="noopener noreferrer" aria-label="Link to linke.pt">
-                    <img src="noBgColor (1).png" alt="Logo" id="top-logo">
-                </a>
             </div>
 
             <div id="view-all">
@@ -250,20 +261,50 @@
                 <div class="assumptions" style="margin-bottom:12px;">
                     <h3>Assumptions (editáveis)</h3>
                     <div class="assumptions-grid">
-                        <label>Ticket médio: <input id="ass-ticket" type="number" value="85.66" step="0.01"></label>
-                        <label>Custo op / cliente: <input id="ass-op" type="number" value="60" step="0.01"></label>
-                        <label>Mês em que começam a entrar clientes: <input id="ass-clients-start" type="number" value="6" min="1" max="60"></label>
-                        <label>Clientes iniciais no 1º mês: <input id="ass-clients-init" type="number" value="100" step="1" min="0"></label>
-                        <label>% Crescimento mensal (composto): <input id="ass-clients-growth" type="number" value="10" step="0.1" min="0"></label>
-                        <label style="display:flex;align-items:center;gap:6px;">Usar modelo de crescimento: <input id="ass-clients-growth-mode" type="checkbox" checked></label>
-                        <label>Custos fixos /m: <input id="ass-fixed" type="number" value="1250" step="1"></label>
-                        <label>Custos equipa /m: <input id="ass-team" type="number" value="6000" step="1"></label>
-                        <label>Equipa inicia em mês: <input id="ass-team-start" type="number" value="15" min="1" max="60"></label>
-                        <label>Investimento mensal (plataforma): <input id="ass-invest" type="number" value="14750" step="1"></label>
-                        <label>Investimento até mês: <input id="ass-invest-end" type="number" value="16" min="1" max="60"></label>
-                        <label>Marketing /m: <input id="ass-marketing" type="number" value="5000" step="1"></label>
-                        <label>Marketing start: <input id="ass-marketing-start" type="number" value="17" min="1" max="60"></label>
-                        <label>Marketing end: <input id="ass-marketing-end" type="number" value="22" min="1" max="60"></label>
+                        <div class="ass-group" data-group="clients">
+                            <strong>Receita & Clientes <button class="collapse-btn" aria-expanded="true" aria-label="Recolher/Expandir">▾</button></strong>
+                            <p class="help-text">Defina o ticket médio, quando os clientes começam a entrar e o modelo de crescimento.</p>
+                            <div class="group-body">
+                                <label>Ticket médio: <input id="ass-ticket" type="number" value="85.66" step="0.01"></label>
+                                <label>Mês em que começam a entrar clientes: <input id="ass-clients-start" type="number" value="6" min="1" max="60"></label>
+                                <label>Clientes iniciais no 1º mês: <input id="ass-clients-init" type="number" value="100" step="1" min="0"></label>
+                                <label>% Crescimento mensal (composto): <input id="ass-clients-growth" type="number" value="10" step="0.1" min="0"></label>
+                                <label style="display:flex;align-items:center;gap:6px;">Usar modelo de crescimento: <input id="ass-clients-growth-mode" type="checkbox" checked></label>
+                            </div>
+                        </div>
+                        <div class="ass-group" data-group="costs">
+                            <strong>Custos <button class="collapse-btn" aria-expanded="true" aria-label="Recolher/Expandir">▾</button></strong>
+                            <p class="help-text">Inclui custos operacionais por cliente e custos fixos mensais (servidores, renda, contabilidade, AI).</p>
+                            <div class="group-body">
+                                <label>Custo op / cliente: <input id="ass-op" type="number" value="60" step="0.01"></label>
+                                <label>Custos fixos /m: <input id="ass-fixed" type="number" value="1250" step="1"></label>
+                            </div>
+                        </div>
+                        <div class="ass-group" data-group="team">
+                            <strong>Equipa <button class="collapse-btn" aria-expanded="true" aria-label="Recolher/Expandir">▾</button></strong>
+                            <p class="help-text">Custo mensal da equipa (ex.: 2 comerciais + 2 apoio ao cliente).</p>
+                            <div class="group-body">
+                                <label>Custos equipa /m: <input id="ass-team" type="number" value="6000" step="1"></label>
+                                <label>Equipa inicia em mês: <input id="ass-team-start" type="number" value="15" min="1" max="60"></label>
+                            </div>
+                        </div>
+                        <div class="ass-group" data-group="invest">
+                            <strong>Investimento <button class="collapse-btn" aria-expanded="true" aria-label="Recolher/Expandir">▾</button></strong>
+                            <p class="help-text">Investimento em desenvolvimento da plataforma/website — valor mensal e duração.</p>
+                            <div class="group-body">
+                                <label>Investimento mensal (plataforma): <input id="ass-invest" type="number" value="14750" step="1"></label>
+                                <label>Investimento até mês: <input id="ass-invest-end" type="number" value="16" min="1" max="60"></label>
+                            </div>
+                        </div>
+                        <div class="ass-group" data-group="marketing">
+                            <strong>Marketing <button class="collapse-btn" aria-expanded="true" aria-label="Recolher/Expandir">▾</button></strong>
+                            <p class="help-text">Orçamento mensal de marketing e janela temporal.</p>
+                            <div class="group-body">
+                                <label>Marketing /m: <input id="ass-marketing" type="number" value="5000" step="1"></label>
+                                <label>Marketing start: <input id="ass-marketing-start" type="number" value="17" min="1" max="60"></label>
+                                <label>Marketing end: <input id="ass-marketing-end" type="number" value="22" min="1" max="60"></label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -277,7 +318,7 @@
                             <th class="num">Custos Fixos</th>
                             <th class="num">Custos Equipa</th>
                             <th class="num">Marketing</th>
-                            <th class="num">Custos Operação</th>
+                            <th class="num th-op">Custos Operação</th>
                             <th class="num">Total Custos</th>
                             <th class="num">Resultado Mensal</th>
                         </tr>
@@ -349,6 +390,8 @@
             function fmt(v){ return Number(v).toLocaleString('pt-PT', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
 
             const assumptions = {};
+            // current UI mode: 'all' (default) or 'tms'
+            let uiMode = 'all';
             function readAssumptionsFromUI(){
                 const get = id => document.getElementById(id);
                 function readNumber(id, isInt){
@@ -390,7 +433,8 @@
                     const totalCostsEl = document.getElementById('all-total-costs');
                     const netEl = document.getElementById('all-net');
 
-                    const ticket = assumptions.ticket; const opPerClient = assumptions.opPerClient; const fixed = assumptions.fixed;
+                    const ticket = assumptions.ticket; let opPerClient = assumptions.opPerClient; const fixed = assumptions.fixed;
+                    if(typeof uiMode !== 'undefined' && uiMode === 'tms'){ opPerClient = 0; }
                     let totalRev=0, totalOp=0, totalFixed=0, totalCosts=0, totalNet=0; let totalInvest=0, totalTeam=0, totalMarketing=0;
                     const phaseAggs = phases.map(p => ({title:p.title, start:p.start, end:p.end, rev:0, invest:0, fixed:0, team:0, marketing:0, op:0, costs:0, net:0}));
 
@@ -402,6 +446,15 @@
                         td.colSpan = 10; td.className='stage-header'; td.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; td.style.color='white'; td.style.fontSize='16px';
                         td.textContent = title; tr.appendChild(td); tbody.appendChild(tr);
                     }
+
+                    // Ensure header visibility matches uiMode
+                    try{
+                        if(typeof uiMode !== 'undefined' && uiMode === 'tms'){
+                            document.querySelectorAll('.th-op').forEach(el=> el.style.display='none');
+                        } else {
+                            document.querySelectorAll('.th-op').forEach(el=> el.style.display='');
+                        }
+                    } catch(e){}
 
                     for(let m=1;m<=60;m++){
                         phases.forEach(p => { if(m===p.start) insertPhaseHeader(p.title); });
@@ -434,6 +487,10 @@
                         // fixed costs tooltip breakdown (static labels as requested)
                         const fixedBreakdown = `Servidores ${fmt(750)} + Renda ${fmt(200)} + Contab. ${fmt(150)} + AI ${fmt(150)} = ${fmt(1250)}`;
                         const fixedCell = `<td class="num fixed-cell" data-tooltip="${fixedBreakdown}" title="${fixedBreakdown}">${fmt(fixed)}</td>`;
+                        // operation cell: hide visually when in TMS mode but keep structure
+                        const opCell = (typeof uiMode !== 'undefined' && uiMode === 'tms')
+                            ? `<td class="num op-cell" data-tooltip="Custo de envios/Guias" title="Custo de envios/Guias" style="display:none">${fmt(opCost)}</td>`
+                            : `<td class="num op-cell" data-tooltip="Custo de envios/Guias" title="Custo de envios/Guias">${fmt(opCost)}</td>`;
                         tr.innerHTML = `
                             <td class="metric">M${m}</td>
                             <td class="num">${clients}</td>
@@ -442,7 +499,7 @@
                             ${fixedCell}
                             <td class="num team-cell" data-tooltip="4 Membros — 2 Comerciais + 2 Apoio ao cliente" title="4 Membros — 2 Comerciais + 2 Apoio ao cliente">${fmt(teamCost)}</td>
                             <td class="num marketing-cell" data-tooltip="Contratação de Agências Especializadas" title="Contratação de Agências Especializadas">${fmt(marketingCost)}</td>
-                            <td class="num op-cell" data-tooltip="Custo de envios/Guias" title="Custo de envios/Guias">${fmt(opCost)}</td>
+                            ${opCell}
                             <td class="num">${fmt(totalCost)}</td>
                             <td class="num ${resClass}">${result>=0? '+' : ''}${fmt(result)}</td>
                         `;
@@ -465,7 +522,7 @@
                                     <span class="key-metric">Custos Fixos: <strong>${fmt(a.fixed)}</strong></span>
                                     <span class="key-metric">Custos Equipa: <strong>${fmt(a.team)}</strong></span>
                                     <span class="key-metric">Marketing: <strong>${fmt(a.marketing)}</strong></span>
-                                    <span class="key-metric">Custos Operação: <strong>${fmt(a.op)}</strong></span>
+                                    ${(typeof uiMode !== 'undefined' && uiMode === 'tms') ? '' : `<span class="key-metric">Custos Operação: <strong>${fmt(a.op)}</strong></span>`}
                                     <span class="key-metric">Total Custos: <strong>${fmt(a.costs)}</strong></span>
                                     <span class="key-metric">Lucro Líquido: <strong class="${a.net>=0? 'positive' : 'negative'}">${a.net>=0? '+' : ''}${fmt(a.net)}</strong></span>
                                 </div>
@@ -539,15 +596,27 @@
                     const exportBtn = document.getElementById('export-csv');
                     if(exportBtn){
                         exportBtn.onclick = function(){
-                            const rows = [['Mes','Clientes','Receita','Investimento','Custos Fixos','Custos Equipa','Marketing','Custos Operacao','Total Custos','Resultado']];
+                            // Build headers and index map depending on uiMode
+                            const fullHeaders = ['Mes','Clientes','Receita','Investimento','Custos Fixos','Custos Equipa','Marketing','Custos Operacao','Total Custos','Resultado'];
+                            let headers = fullHeaders.slice();
+                            let indices = headers.map((h,i)=>i);
+                            if(typeof uiMode !== 'undefined' && uiMode === 'tms'){
+                                // remove 'Custos Operacao' (index 7)
+                                const removeAt = 7;
+                                headers.splice(removeAt,1);
+                                indices = headers.map(h => fullHeaders.indexOf(h));
+                            }
+                            const rows = [headers];
                             for(let r=0;r<tbody.rows.length;r++){
-                                const cols = Array.from(tbody.rows[r].cells).map(td => td.textContent.replace(/\u00A0/g,' '));
+                                const cells = Array.from(tbody.rows[r].cells);
+                                // map selected indices to cell text (if missing, fallback to '')
+                                const cols = indices.map(idx => (cells[idx] ? String(cells[idx].textContent).replace(/\u00A0/g,' ') : ''));
                                 rows.push(cols);
                             }
                             const csv = rows.map(r=> r.map(c=> '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
                             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
                             const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a'); a.href = url; a.download = 'all-in-one-60-months.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+                            const a = document.createElement('a'); a.href = url; a.download = (uiMode === 'tms' ? 'tms-60-months.csv' : 'all-in-one-60-months.csv'); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
                         };
                     }
 
@@ -605,6 +674,42 @@
                     const active = document.body.classList.contains('summary-prominent');
                     setMode(active ? null : 'prominent');
                 }); }
+
+                // New view buttons: All in One and TMS (toggle active state)
+                const btnViewAll = document.getElementById('btn-view-allinone');
+                const btnViewTms = document.getElementById('btn-view-tms');
+                function clearViewButtons(){ if(btnViewAll) btnViewAll.classList.remove('active'); if(btnViewTms) btnViewTms.classList.remove('active'); }
+                if(btnViewAll){ btnViewAll.addEventListener('click', ()=>{ clearViewButtons(); btnViewAll.classList.add('active'); uiMode = 'all'; // enable op input and show column
+                    const v = document.getElementById('view-all'); if(v) v.style.display=''; const opInput = document.getElementById('ass-op'); if(opInput) { opInput.disabled = false; }
+                    document.body.classList.remove('mode-tms'); document.querySelectorAll('.th-op, .op-cell').forEach(el=> el.style.display='');
+                    runAllInOne(); }); }
+                if(btnViewTms){ btnViewTms.addEventListener('click', ()=>{ clearViewButtons(); btnViewTms.classList.add('active'); uiMode = 'tms'; // in TMS mode, disable op input and hide op column
+                    const opInput = document.getElementById('ass-op'); if(opInput){ opInput.disabled = true; opInput.dataset._prev = opInput.value; opInput.value = '0'; }
+                    document.body.classList.add('mode-tms'); document.querySelectorAll('.th-op').forEach(el=> el.style.display='none'); document.querySelectorAll('.op-cell').forEach(el=> el.style.display='none'); runAllInOne(); }); }
+
+                // Collapsible assumption groups: wire buttons and persist state
+                const groupEls = Array.from(document.querySelectorAll('.ass-group'));
+                groupEls.forEach(g => {
+                    const key = 'ass-group-' + (g.getAttribute('data-group') || g.querySelector('strong')?.textContent?.trim()?.toLowerCase()?.replace(/\s+/g,'-'));
+                    const btn = g.querySelector('.collapse-btn');
+                    const body = g.querySelector('.group-body');
+                    // initialize max-height for smooth transitions (compute content height)
+                    if(body){ body.style.maxHeight = (body.scrollHeight + 12) + 'px'; }
+                    // restore collapsed state from localStorage; default to collapsed unless explicitly expanded
+                    try{
+                        const saved = localStorage.getItem(key);
+                        const isExpanded = (saved === 'expanded');
+                        if(!isExpanded){ g.classList.add('collapsed'); if(btn) btn.setAttribute('aria-expanded','false'); if(body) body.style.maxHeight = '0px'; }
+                        else { if(btn) btn.setAttribute('aria-expanded','true'); if(body) body.style.maxHeight = (body.scrollHeight + 12) + 'px'; }
+                    } catch(e){}
+                    if(btn){ btn.addEventListener('click', ()=>{
+                        const isCollapsed = g.classList.toggle('collapsed');
+                        btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+                        try{ localStorage.setItem(key, isCollapsed ? 'collapsed' : 'expanded'); } catch(e){}
+                        // adjust maxHeight to allow smooth expand
+                        if(body){ if(!isCollapsed){ body.style.maxHeight = (body.scrollHeight + 12) + 'px'; } else { body.style.maxHeight = '0px'; } }
+                    }); }
+                });
 
                 // initial generation
                 runAllInOne(); updateTmsSummaries();
