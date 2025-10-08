@@ -10,6 +10,19 @@
     <meta property="og:description" content="Projeção financeira de 60 meses com fases de investimento, receitas e margens — visão para investidores.">
     <meta property="og:type" content="website">
     <style>
+        /* Assumptions panel styling */
+        .assumptions { background: linear-gradient(180deg,#ffffff,#fbfcff); padding:12px 14px; border-radius:10px; border:1px solid rgba(2,6,23,0.04); box-shadow: 0 8px 20px rgba(15,23,42,0.03); }
+        .assumptions h3{ margin:0 0 8px 0; font-size:1.02rem; color:#0b1220 }
+        .assumptions-grid{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .assumptions-grid label{ display:flex; align-items:center; gap:8px; background:transparent; padding:6px 8px; border-radius:8px; transition: transform .12s ease, box-shadow .12s ease; }
+        .assumptions-grid label:hover{ transform: translateY(-3px); box-shadow: 0 8px 20px rgba(2,6,23,0.05); }
+        .assumptions-grid input[type="number"]{ width:110px; padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,42,0.08); background: white; font-weight:700; text-align:right; }
+        .assumptions-grid input[type="checkbox"]{ width:auto; transform:scale(1.05); }
+        .assumptions-grid label small{ color:#475569; display:block; font-size:0.78rem; }
+        .assumptions-grid input[type=number]:focus{ outline:none; box-shadow: 0 6px 18px rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.24); }
+        /* hide default spinner on number inputs for better aesthetics */
+        input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { appearance:textfield; -moz-appearance:textfield; }
         /* page base */
         body {
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
@@ -162,6 +175,11 @@
         .summary-row .metric.prominent.positive strong{ color:#059669; }
         .summary-row .metric.prominent.negative strong{ color:#dc2626; }
 
+    /* ROI styling */
+    .summary-row .metric #all-roi { font-size:1.02rem; }
+    .summary-row .metric.positive #all-roi { color: #059669; font-weight:800; }
+    .summary-row .metric.negative #all-roi { color: #dc2626; font-weight:800; }
+
         @media (max-width:780px){
             .summary-row { flex-direction:column; align-items:flex-start; }
             .summary-row .metric{ width:100%; text-align:left; margin-top:6px; }
@@ -192,19 +210,21 @@
                 <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
                     <button class="btn" id="export-csv">Export CSV</button>
                     <div style="flex:1"></div>
-                    <div class="key-metric">Custo Operação por Cliente: <strong>60 €</strong></div>
-                    <div class="key-metric">Ticket Médio: <strong>85.66 €</strong></div>
                 </div>
 
                 <div id="all-error" style="display:none; background:#ffe3e3; border-left:4px solid #e53e3e; padding:10px; margin-bottom:12px; border-radius:6px;">
                     <strong>Erro:</strong> <span id="all-error-msg"></span>
                 </div>
 
-                <div style="margin-bottom:12px;">
+                <div class="assumptions" style="margin-bottom:12px;">
                     <h3>Assumptions (editáveis)</h3>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <div class="assumptions-grid">
                         <label>Ticket médio: <input id="ass-ticket" type="number" value="85.66" step="0.01"></label>
                         <label>Custo op / cliente: <input id="ass-op" type="number" value="60" step="0.01"></label>
+                        <label>Mês em que começam a entrar clientes: <input id="ass-clients-start" type="number" value="6" min="1" max="60"></label>
+                        <label>Clientes iniciais no 1º mês: <input id="ass-clients-init" type="number" value="100" step="1" min="0"></label>
+                        <label>% Crescimento mensal (composto): <input id="ass-clients-growth" type="number" value="10" step="0.1" min="0"></label>
+                        <label style="display:flex;align-items:center;gap:6px;">Usar modelo de crescimento: <input id="ass-clients-growth-mode" type="checkbox" checked></label>
                         <label>Custos fixos /m: <input id="ass-fixed" type="number" value="1250" step="1"></label>
                         <label>Custos equipa /m: <input id="ass-team" type="number" value="6000" step="1"></label>
                         <label>Equipa inicia em mês: <input id="ass-team-start" type="number" value="15" min="1" max="60"></label>
@@ -245,6 +265,7 @@
                         <div class="summary-row"><div class="small">Investimento Marketing Total:</div><div class="metric"><strong id="all-total-marketing">-</strong></div></div>
                         <div class="summary-row"><div class="small">Lucro Líquido Acumulado:</div><div class="metric"><strong id="all-net">-</strong></div></div>
                         <div class="summary-row"><div class="small">Break-Even:</div><div class="metric"><strong id="all-break">-</strong></div></div>
+                        <div class="summary-row"><div class="small">ROI (Retorno / Investimento):</div><div class="metric"><strong id="all-roi">-</strong></div></div>
                     </div>
                 </div>
             </div>
@@ -268,6 +289,19 @@
             ];
 
             function interpClients(month){
+                // if clientsStart is configured, do not count clients before that month
+                if(assumptions && typeof assumptions.clientsStart !== 'undefined'){
+                    if(month < assumptions.clientsStart) return 0;
+                }
+                // if growth mode is enabled, use geometric growth from clientsInit with clientsGrowth percent
+                if(assumptions && assumptions.clientsGrowthMode){
+                    const start = Math.max(1, assumptions.clientsStart || 1);
+                    if(month < start) return 0;
+                    const monthsSince = month - start;
+                    const rate = (assumptions.clientsGrowth || 0) / 100;
+                    // compound growth: init * (1+rate)^monthsSince
+                    return Math.round((assumptions.clientsInit || 0) * Math.pow(1 + rate, monthsSince));
+                }
                 let left = keypoints[0];
                 let right = keypoints[keypoints.length-1];
                 for(let i=0;i<keypoints.length;i++){
@@ -286,16 +320,30 @@
             const assumptions = {};
             function readAssumptionsFromUI(){
                 const get = id => document.getElementById(id);
-                assumptions.ticket = parseFloat(get('ass-ticket').value) || 85.66;
-                assumptions.opPerClient = parseFloat(get('ass-op').value) || 60;
-                assumptions.fixed = parseFloat(get('ass-fixed').value) || 1250;
-                assumptions.teamCost = parseFloat(get('ass-team').value) || 6000;
-                assumptions.teamStart = parseInt(get('ass-team-start').value) || 15;
-                assumptions.investAmount = parseFloat(get('ass-invest').value) || 14750;
-                assumptions.investEnd = parseInt(get('ass-invest-end').value) || 16;
-                assumptions.marketingAmount = parseFloat(get('ass-marketing').value) || 5000;
-                assumptions.marketingStart = parseInt(get('ass-marketing-start').value) || 17;
-                assumptions.marketingEnd = parseInt(get('ass-marketing-end').value) || 22;
+                function readNumber(id, isInt){
+                    const el = get(id);
+                    if(!el) return 0;
+                    const v = el.value;
+                    if(v === null || v === '') return 0;
+                    const n = isInt ? parseInt(v, 10) : parseFloat(v);
+                    return isNaN(n) ? 0 : n;
+                }
+                assumptions.ticket = readNumber('ass-ticket', false);
+                assumptions.opPerClient = readNumber('ass-op', false);
+                assumptions.fixed = readNumber('ass-fixed', false);
+                assumptions.teamCost = readNumber('ass-team', false);
+                assumptions.teamStart = readNumber('ass-team-start', true);
+                assumptions.investAmount = readNumber('ass-invest', false);
+                assumptions.investEnd = readNumber('ass-invest-end', true);
+                assumptions.marketingAmount = readNumber('ass-marketing', false);
+                assumptions.marketingStart = readNumber('ass-marketing-start', true);
+                assumptions.marketingEnd = readNumber('ass-marketing-end', true);
+                assumptions.clientsStart = readNumber('ass-clients-start', true) || 1;
+                // client growth model inputs
+                assumptions.clientsInit = readNumber('ass-clients-init', true) || 100;
+                assumptions.clientsGrowth = readNumber('ass-clients-growth', false) || 10;
+                const gm = get('ass-clients-growth-mode');
+                assumptions.clientsGrowthMode = gm ? !!gm.checked : true;
             }
 
             function showError(message){ const errBox = document.getElementById('all-error'); const errMsg = document.getElementById('all-error-msg'); if(errBox && errMsg){ errMsg.textContent = message; errBox.style.display = ''; } else console.error(message); }
@@ -428,6 +476,29 @@
                         if(breakEvenMonth){ breakRow.classList.add('break'); } else { breakRow.classList.remove('break'); }
                     }
 
+                    // compute and display ROI = (totalNet / totalInvest) * 100
+                    const roiField = document.getElementById('all-roi');
+                    if(roiField){
+                        let roiText = '-';
+                        const roiRow = roiField.closest('.summary-row');
+                        if(totalInvest && !isNaN(totalInvest) && totalInvest !== 0){
+                            const roi = (totalNet / totalInvest) * 100;
+                            const sign = roi >= 0 ? '+' : '';
+                            roiText = sign + roi.toFixed(2) + ' %';
+                            // color class on metric
+                            roiField.parentElement.classList.remove('positive','negative');
+                            roiField.parentElement.classList.add(roi>=0? 'positive' : 'negative');
+                        } else {
+                            roiText = 'N/A';
+                            if(roiField.parentElement) roiField.parentElement.classList.remove('positive','negative');
+                        }
+                        roiField.textContent = roiText;
+                        // give ROI row a subtle emphasis when positive
+                        if(roiRow){
+                            roiRow.classList.toggle('summary-positive', (totalInvest && totalNet>0));
+                        }
+                    }
+
                     // (phase summaries are inserted inline immediately after the last month row)
 
                     // prepare CSV export (assign, don't add multiple listeners)
@@ -466,7 +537,7 @@
             }
 
             function debounce(fn, wait){ let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=> fn(...args), wait); }; }
-            const inputs = ['ass-ticket','ass-op','ass-fixed','ass-team','ass-team-start','ass-invest','ass-invest-end','ass-marketing','ass-marketing-start','ass-marketing-end'];
+            const inputs = ['ass-ticket','ass-op','ass-fixed','ass-team','ass-team-start','ass-invest','ass-invest-end','ass-marketing','ass-marketing-start','ass-marketing-end','ass-clients-start','ass-clients-init','ass-clients-growth','ass-clients-growth-mode'];
             const debounced = debounce(()=>{ runAllInOne(); updateTmsSummaries(); }, 220);
 
             document.addEventListener('DOMContentLoaded', ()=>{
