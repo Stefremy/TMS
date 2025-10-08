@@ -95,10 +95,12 @@
 
         #all-error { display:none; }
         @media print { .topbar, .btn { display:none; } }
-    /* logo area (centered) */
-    .page-logo { display:flex; justify-content:center; margin: 10px 0 20px 0; }
-    .page-logo img#top-logo { height:72px; width:auto; display:block; filter: drop-shadow(0 8px 20px rgba(2,6,23,0.06)); }
-    @media (max-width:520px){ .page-logo img#top-logo { height:56px; } }
+    /* logo area (centered) — tightened spacing so it doesn't push content down */
+    .page-logo { display:flex; justify-content:center; margin: 4px 0 6px 0; }
+    .page-logo a { display:inline-block; line-height:1; }
+    .page-logo img#top-logo { height:56px; width:auto; display:block; filter: drop-shadow(0 6px 16px rgba(2,6,23,0.06)); }
+    @media (max-width:520px){ .page-logo img#top-logo { height:44px; } }
+    @media print { .page-logo { display:none; } }
     </style>
     <style>
         /* summary size modes */
@@ -178,7 +180,9 @@
 
             <!-- centered logo -->
             <div class="page-logo" aria-hidden="true">
-                <img src="/workspaces/TMS/noBgColor (1).png" alt="Logo" id="top-logo">
+                <a href="https://www.linke.pt" target="_blank" rel="noopener noreferrer" aria-label="Link to linke.pt">
+                    <img src="noBgColor (1).png" alt="Logo" id="top-logo">
+                </a>
             </div>
 
             <div id="view-all">
