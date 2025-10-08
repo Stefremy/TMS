@@ -157,10 +157,7 @@
     </style>
     <style>
         /* summary size modes */
-        body.summary-compact td.summary-box { padding: 8px; font-size: 0.9rem; }
-        body.summary-compact .summary-box { padding: 8px; font-size: 0.9rem; }
-        body.summary-prominent td.summary-box { padding: 22px; font-size: 1.05rem; }
-        body.summary-prominent .summary-box { padding: 18px; font-size: 1.02rem; }
+        /* (summary size modes removed) */
         /* active state for toggle buttons */
         .btn.toggled { background:#111827; color:white; }
     </style>
@@ -238,10 +235,9 @@
                     </div>
                 </div>
                 <div style="flex:1"></div>
-                <button class="btn" id="btn-view-allinone" title="Ver All in One">All in One</button>
+                <button class="btn active" id="btn-view-allinone" title="Ver All in One">All in One</button>
                 <button class="btn" id="btn-view-tms" title="Ver TMS">TMS</button>
-                <button class="btn" id="btn-compact" title="Mostrar resumos compactos">Compact</button>
-                <button class="btn" id="btn-prominent" title="Mostrar resumos em destaque">Prominent</button>
+                
                 <button class="btn" id="btn-print">Imprimir / Salvar PDF</button>
             </div>
 
@@ -650,30 +646,7 @@
                 if(btnAll) btnAll.addEventListener('click', ()=>{ document.getElementById('view-all').style.display=''; btnAll.classList.add('active'); });
                 document.getElementById('btn-print').addEventListener('click', ()=> setTimeout(()=> window.print(), 100));
 
-                // Summary mode toggles: compact vs prominent (mutually exclusive)
-                const btnCompact = document.getElementById('btn-compact');
-                const btnProminent = document.getElementById('btn-prominent');
-                function setMode(mode){
-                    // mode: 'compact' | 'prominent' | null
-                    document.body.classList.remove('summary-compact','summary-prominent');
-                    if(btnCompact) btnCompact.classList.remove('toggled');
-                    if(btnProminent) btnProminent.classList.remove('toggled');
-                    if(mode === 'compact'){
-                        document.body.classList.add('summary-compact');
-                        if(btnCompact) btnCompact.classList.add('toggled');
-                    } else if(mode === 'prominent'){
-                        document.body.classList.add('summary-prominent');
-                        if(btnProminent) btnProminent.classList.add('toggled');
-                    }
-                }
-                if(btnCompact){ btnCompact.addEventListener('click', ()=>{
-                    const active = document.body.classList.contains('summary-compact');
-                    setMode(active ? null : 'compact');
-                }); }
-                if(btnProminent){ btnProminent.addEventListener('click', ()=>{
-                    const active = document.body.classList.contains('summary-prominent');
-                    setMode(active ? null : 'prominent');
-                }); }
+                
 
                 // New view buttons: All in One and TMS (toggle active state)
                 const btnViewAll = document.getElementById('btn-view-allinone');
