@@ -265,7 +265,7 @@
                                 <label>Mês em que começam a entrar clientes: <input id="ass-clients-start" type="number" value="6" min="1" max="60"></label>
                                 <label>Clientes iniciais no 1º mês: <input id="ass-clients-init" type="number" value="100" step="1" min="0"></label>
                                 <label>% Crescimento mensal (composto): <input id="ass-clients-growth" type="number" value="10" step="0.1" min="0"></label>
-                                <label style="display:flex;align-items:center;gap:6px;">Usar modelo de crescimento: <input id="ass-clients-growth-mode" type="checkbox" checked></label>
+                                <label style="display:flex;align-items:center;gap:6px;">Usar modelo de crescimento: <input id="ass-clients-growth-mode" type="checkbox" title="Crescimento composto do mês anterior"></label>
                             </div>
                         </div>
                         <div class="ass-group" data-group="costs">
@@ -411,7 +411,8 @@
                 assumptions.clientsStart = readNumber('ass-clients-start', true) || 1;
                 // client growth model inputs
                 assumptions.clientsInit = readNumber('ass-clients-init', true) || 100;
-                assumptions.clientsGrowth = readNumber('ass-clients-growth', false) || 10;
+                // allow 0 or small percentage values (do not coerce falsy 0 to default)
+                assumptions.clientsGrowth = readNumber('ass-clients-growth', false);
                 const gm = get('ass-clients-growth-mode');
                 assumptions.clientsGrowthMode = gm ? !!gm.checked : true;
             }
@@ -643,7 +644,25 @@
                 inputs.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', debounced); });
                 // Only All-in-One view remains. Wire the All-in-One button to ensure it's active and visible.
                 const btnAll = document.getElementById('btn-all');
-                if(btnAll) btnAll.addEventListener('click', ()=>{ document.getElementById('view-all').style.display=''; btnAll.classList.add('active'); });
+                if(btnAll) btnAll.addEventListener('click', ()=>{
+                    document.getElementById('view-all').style.display='';
+                    btnAll.classList.add('active');
+                    // collapse all assumption groups when SaaS is clicked
+                    try{
+                        const groups = Array.from(document.querySelectorAll('.ass-group'));
+                        groups.forEach(g => {
+                            g.classList.add('collapsed');
+                            const btn = g.querySelector('.collapse-btn');
+                            if(btn) btn.setAttribute('aria-expanded','false');
+                            const body = g.querySelector('.group-body');
+                            if(body) body.style.maxHeight = '0px';
+                            try{
+                                const key = 'ass-group-' + (g.getAttribute('data-group') || g.querySelector('strong')?.textContent?.trim()?.toLowerCase()?.replace(/\s+/g,'-'));
+                                localStorage.setItem(key, 'collapsed');
+                            }catch(e){}
+                        });
+                    }catch(e){/* ignore */}
+                });
                 document.getElementById('btn-print').addEventListener('click', ()=> setTimeout(()=> window.print(), 100));
 
                 
