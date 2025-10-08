@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/", "dest": "/investment-stages-60-months.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
