@@ -114,6 +114,37 @@
     .page-logo img#top-logo { height:56px; width:auto; display:block; filter: drop-shadow(0 6px 16px rgba(2,6,23,0.06)); }
     @media (max-width:520px){ .page-logo img#top-logo { height:44px; } }
     @media print { .page-logo { display:none; } }
+    /* fixed-cost tooltip styling */
+    .fixed-cell { position:relative; cursor:help; }
+    .fixed-cell:hover::after{
+        content: attr(data-tooltip);
+        position:absolute; left:50%; transform:translateX(-50%); top:calc(100% + 10px);
+        background: #0b1220; color: #fff; padding:8px 10px; border-radius:8px; white-space:nowrap; font-size:0.85rem; z-index:30; box-shadow:0 10px 30px rgba(2,6,23,0.18);
+    }
+    .team-cell { position:relative; cursor:help; }
+    .team-cell:hover::after{
+        content: attr(data-tooltip);
+        position:absolute; left:50%; transform:translateX(-50%); top:calc(100% + 10px);
+        background: #0b1220; color: #fff; padding:8px 10px; border-radius:8px; white-space:nowrap; font-size:0.85rem; z-index:30; box-shadow:0 10px 30px rgba(2,6,23,0.18);
+    }
+    .invest-cell { position:relative; cursor:help; }
+    .invest-cell:hover::after{
+        content: attr(data-tooltip);
+        position:absolute; left:50%; transform:translateX(-50%); top:calc(100% + 10px);
+        background: #0b1220; color: #fff; padding:8px 10px; border-radius:8px; white-space:nowrap; font-size:0.85rem; z-index:30; box-shadow:0 10px 30px rgba(2,6,23,0.18);
+    }
+    .marketing-cell { position:relative; cursor:help; }
+    .marketing-cell:hover::after{
+        content: attr(data-tooltip);
+        position:absolute; left:50%; transform:translateX(-50%); top:calc(100% + 10px);
+        background: #0b1220; color: #fff; padding:8px 10px; border-radius:8px; white-space:nowrap; font-size:0.85rem; z-index:30; box-shadow:0 10px 30px rgba(2,6,23,0.18);
+    }
+    .op-cell { position:relative; cursor:help; }
+    .op-cell:hover::after{
+        content: attr(data-tooltip);
+        position:absolute; left:50%; transform:translateX(-50%); top:calc(100% + 10px);
+        background: #0b1220; color: #fff; padding:8px 10px; border-radius:8px; white-space:nowrap; font-size:0.85rem; z-index:30; box-shadow:0 10px 30px rgba(2,6,23,0.18);
+    }
     </style>
     <style>
         /* summary size modes */
@@ -400,15 +431,18 @@
                         // build revenue classes and tooltip depending on pre-break / break status
                         const revStateClass = `${revenue>0 ? 'positive' : ''} ${markRevenue ? 'rev-prebreakeven' : ''} ${isBreakMonth ? 'rev-break' : ''}`.trim();
                         const revTitle = isBreakMonth ? 'Mês de break-even — receita cobre os investimentos' : (markRevenue ? 'Receita antes do break-even' : '');
+                        // fixed costs tooltip breakdown (static labels as requested)
+                        const fixedBreakdown = `Servidores ${fmt(750)} + Renda ${fmt(200)} + Contab. ${fmt(150)} + AI ${fmt(150)} = ${fmt(1250)}`;
+                        const fixedCell = `<td class="num fixed-cell" data-tooltip="${fixedBreakdown}" title="${fixedBreakdown}">${fmt(fixed)}</td>`;
                         tr.innerHTML = `
                             <td class="metric">M${m}</td>
                             <td class="num">${clients}</td>
                             <td class="num ${revStateClass}" title="${revTitle}">${fmt(revenue)}</td>
-                            <td class="num">${fmt(invest)}</td>
-                            <td class="num">${fmt(fixed)}</td>
-                            <td class="num">${fmt(teamCost)}</td>
-                            <td class="num">${fmt(marketingCost)}</td>
-                            <td class="num">${fmt(opCost)}</td>
+                            <td class="num invest-cell" data-tooltip="Desenvolvimento da plataforma / website ${fmt(assumptions.investAmount)} x ${assumptions.investEnd} meses" title="Desenvolvimento da plataforma / website ${fmt(assumptions.investAmount)} x ${assumptions.investEnd} meses">${fmt(invest)}</td>
+                            ${fixedCell}
+                            <td class="num team-cell" data-tooltip="4 Membros — 2 Comerciais + 2 Apoio ao cliente" title="4 Membros — 2 Comerciais + 2 Apoio ao cliente">${fmt(teamCost)}</td>
+                            <td class="num marketing-cell" data-tooltip="Contratação de Agências Especializadas" title="Contratação de Agências Especializadas">${fmt(marketingCost)}</td>
+                            <td class="num op-cell" data-tooltip="Custo de envios/Guias" title="Custo de envios/Guias">${fmt(opCost)}</td>
                             <td class="num">${fmt(totalCost)}</td>
                             <td class="num ${resClass}">${result>=0? '+' : ''}${fmt(result)}</td>
                         `;
