@@ -82,7 +82,7 @@
         .key-metric { margin-right:14px; display:inline-flex; align-items:center; gap:8px; color:#0f172a; }
 
         .rev-prebreakeven { 
-            background: #fffbeb; /* warmer yellow */
+            background: #ffffff; /* warmer yellow */
             border-left: 4px solid #f59e0b; /* amber accent */
             padding:6px 8px; 
             border-radius:6px; 
@@ -95,6 +95,10 @@
 
         #all-error { display:none; }
         @media print { .topbar, .btn { display:none; } }
+    /* logo area (centered) */
+    .page-logo { display:flex; justify-content:center; margin: 10px 0 20px 0; }
+    .page-logo img#top-logo { height:72px; width:auto; display:block; filter: drop-shadow(0 8px 20px rgba(2,6,23,0.06)); }
+    @media (max-width:520px){ .page-logo img#top-logo { height:56px; } }
     </style>
     <style>
         /* summary size modes */
@@ -104,6 +108,62 @@
         body.summary-prominent .summary-box { padding: 18px; font-size: 1.02rem; }
         /* active state for toggle buttons */
         .btn.toggled { background:#111827; color:white; }
+    </style>
+    <style>
+        /* Polished styling for the vertical summary box */
+        .summary-box.summary-vertical {
+            padding: 18px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid rgba(99,102,241,0.06);
+            box-shadow: 0 12px 30px rgba(2,6,23,0.06);
+            margin-top: 8px;
+        }
+        .summary-box.summary-vertical h3 { margin: 0 0 10px 0; font-size: 1.05rem; color: #0f172a; }
+        .summary-rows { margin-top: 6px; }
+        .summary-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            padding:8px 10px;
+            border-radius:8px;
+            transition: background .18s ease, transform .08s ease;
+        }
+        .summary-row:not(:last-child){ border-bottom: 1px solid rgba(15,23,42,0.04); }
+        .summary-row:hover{ background: rgba(99,102,241,0.02); }
+        .summary-row .small { color: #475569; font-size:0.92rem; }
+        .summary-row .metric { text-align:right; font-weight:700; color:#0f172a; min-width:160px; }
+        .summary-row .metric strong{ font-size:1rem; }
+
+        /* net states */
+        .summary-row .metric.positive strong{ color:#059669; }
+        .summary-row .metric.negative strong{ color:#dc2626; }
+
+        /* break-even emphasis */
+        .summary-row.break { 
+            background: linear-gradient(90deg,#fff7e6, #fff4e1); 
+            border-left: 6px solid #f59e0b; 
+            box-shadow: 0 10px 30px rgba(245,158,11,0.09);
+            transform: translateY(-1px);
+        }
+        .summary-row.break .metric strong{ color:#92400e; font-weight:900; font-size:1.08rem; }
+
+        /* accumulated net prominence */
+        .summary-row.net-prominent { 
+            background: linear-gradient(90deg,#f0fff4, #f7fffb);
+            border-left: 6px solid rgba(5,150,105,0.9);
+            box-shadow: 0 10px 30px rgba(6,182,129,0.06);
+            transform: translateY(-1px);
+        }
+        .summary-row.net-prominent .metric strong{ font-size:1.18rem; font-weight:900; letter-spacing:0.2px; }
+        .summary-row .metric.prominent.positive strong{ color:#059669; }
+        .summary-row .metric.prominent.negative strong{ color:#dc2626; }
+
+        @media (max-width:780px){
+            .summary-row { flex-direction:column; align-items:flex-start; }
+            .summary-row .metric{ width:100%; text-align:left; margin-top:6px; }
+        }
     </style>
     </head>
     <body>
@@ -116,9 +176,14 @@
                 <button class="btn" id="btn-print">Imprimir / Salvar PDF</button>
             </div>
 
+            <!-- centered logo -->
+            <div class="page-logo" aria-hidden="true">
+                <img src="/workspaces/TMS/noBgColor (1).png" alt="Logo" id="top-logo">
+            </div>
+
             <div id="view-all">
                 <h1>All in One — Cenário</h1>
-                <div class="subtitle">Clientes All-in-One (lojas online) — inclui custo operacional por cliente (envios) de 60€/cliente</div>
+    
 
                 <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
                     <button class="btn" id="export-csv">Export CSV</button>
@@ -164,14 +229,18 @@
                     </thead>
                     <tbody id="all-tbody"></tbody>
                 </table>
-                <div class="summary-box">
+                <div class="summary-box summary-vertical">
                     <h3>Resumo All-in-One - 60 meses</h3>
-                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <span class="key-metric">Receita Total: <strong id="all-total-rev">-</strong></span>
-                        <span class="key-metric">Custos Operação Total: <strong id="all-total-op">-</strong></span>
-                        <span class="key-metric">Custos Fixos Total: <strong id="all-total-fixed">-</strong></span>
-                        <span class="key-metric">Custos Totais: <strong id="all-total-costs">-</strong></span>
-                        <span class="key-metric">Lucro Líquido Acumulado: <strong id="all-net">-</strong></span>
+                    <div class="summary-rows" style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+                        <div class="summary-row"><div class="small">Receita Total:</div><div class="metric"><strong id="all-total-rev">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Custos Operação Total:</div><div class="metric"><strong id="all-total-op">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Custos Fixos Total:</div><div class="metric"><strong id="all-total-fixed">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Custos Totais:</div><div class="metric"><strong id="all-total-costs">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Investimento Total:</div><div class="metric"><strong id="all-total-invest">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Custos Equipa Total:</div><div class="metric"><strong id="all-total-team">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Investimento Marketing Total:</div><div class="metric"><strong id="all-total-marketing">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Lucro Líquido Acumulado:</div><div class="metric"><strong id="all-net">-</strong></div></div>
+                        <div class="summary-row"><div class="small">Break-Even:</div><div class="metric"><strong id="all-break">-</strong></div></div>
                     </div>
                 </div>
             </div>
@@ -326,17 +395,33 @@
                     if(totalOpEl) totalOpEl.textContent = fmt(totalOp);
                     if(totalFixedEl) totalFixedEl.textContent = fmt(totalFixed);
                     if(totalCostsEl) totalCostsEl.textContent = fmt(totalCosts);
-                    if(netEl) netEl.textContent = (totalNet>=0? '+':'') + fmt(totalNet);
 
-                    // append extra totals
-                    if(totalCostsEl && totalCostsEl.parentElement){
-                        // remove previously appended extras (simple cleanup)
-                        Array.from(totalCostsEl.parentElement.querySelectorAll('.__extra')).forEach(n=>n.remove());
-                        const investEl = document.createElement('span'); investEl.className='key-metric __extra'; investEl.innerHTML = '<strong>Investimento Total:</strong> ' + fmt(totalInvest);
-                        const teamEl = document.createElement('span'); teamEl.className='key-metric __extra'; teamEl.innerHTML = '<strong>Custos Equipa Total:</strong> ' + fmt(totalTeam);
-                        const marketingEl = document.createElement('span'); marketingEl.className='key-metric __extra'; marketingEl.innerHTML = '<strong>Investimento Marketing Total:</strong> ' + fmt(totalMarketing);
-                        totalCostsEl.parentElement.appendChild(investEl); totalCostsEl.parentElement.appendChild(teamEl); totalCostsEl.parentElement.appendChild(marketingEl);
-                        const beSpan = document.createElement('span'); beSpan.className='key-metric __extra'; beSpan.innerHTML = '<strong>Break-Even:</strong> ' + (breakEvenMonth? ('Mês '+breakEvenMonth) : 'Não atingido nos 60 meses'); netEl.parentElement.appendChild(beSpan);
+                    if(netEl) netEl.textContent = (totalNet>=0? '+':'') + fmt(totalNet);
+                    // make the accumulated net row more prominent and color-coded by sign
+                    const netRow = netEl && netEl.closest('.summary-row');
+                    if(netRow){
+                        netRow.classList.add('net-prominent');
+                        const metricEl = netRow.querySelector('.metric');
+                        if(metricEl){
+                            metricEl.classList.add('prominent');
+                            metricEl.classList.remove('positive','negative');
+                            metricEl.classList.add(totalNet>=0? 'positive' : 'negative');
+                        }
+                    }
+
+                    // populate vertical summary fields
+                    const investField = document.getElementById('all-total-invest');
+                    const teamField = document.getElementById('all-total-team');
+                    const marketingField = document.getElementById('all-total-marketing');
+                    const breakField = document.getElementById('all-break');
+                    if(investField) investField.textContent = fmt(totalInvest);
+                    if(teamField) teamField.textContent = fmt(totalTeam);
+                    if(marketingField) marketingField.textContent = fmt(totalMarketing);
+                    if(breakField) breakField.textContent = breakEvenMonth ? ('Mês ' + breakEvenMonth) : 'Não atingido nos 60 meses';
+                    // highlight the break row visually
+                    const breakRow = breakField && breakField.closest('.summary-row');
+                    if(breakRow){
+                        if(breakEvenMonth){ breakRow.classList.add('break'); } else { breakRow.classList.remove('break'); }
                     }
 
                     // (phase summaries are inserted inline immediately after the last month row)
