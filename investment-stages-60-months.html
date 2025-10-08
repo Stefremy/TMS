@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Stages - 60 Months</title>
+    <meta name="description" content="Projeção financeira de 60 meses com fases de investimento, receitas e margens — visão para investidores.">
+    <meta name="theme-color" content="#667eea">
+    <meta property="og:title" content="Cenário Real - Fases de Investimento (60 Meses)">
+    <meta property="og:description" content="Projeção financeira de 60 meses com fases de investimento, receitas e margens — visão para investidores.">
+    <meta property="og:type" content="website">
+    <style>
+        /* page base */
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            background: linear-gradient(180deg, #f0f4ff 0%, #f7fbff 100%);
+            padding: 28px;
+            margin: 0;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.45;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 12px 40px rgba(17,24,39,0.08);
+        }
+
+        h1 { color: #0f172a; margin: 0 0 10px 0; font-size: 1.4rem; }
+        .subtitle { color: #475569; margin-bottom: 10px; }
+
+        .topbar { display:flex; gap:10px; align-items:center; margin-bottom:18px; }
+        .btn { padding:10px 14px; border-radius:10px; border:1px solid rgba(2,6,23,0.06); background:white; cursor:pointer; font-weight:600; }
+        .btn.active { background:#4f46e5; color:white; border-color:transparent; box-shadow: 0 6px 18px rgba(79,70,229,0.12); }
+
+        /* table */
+        table { width:100%; border-collapse:collapse; margin-bottom:18px; border-radius:8px; overflow:hidden; }
+        thead { background: #f8fafc; }
+        th { padding:12px 12px; text-align:left; font-weight:700; color:#0f172a; font-size:0.95rem; border-bottom:1px solid #eef2ff; }
+        td { padding:12px 12px; border-bottom:1px solid #f1f5f9; vertical-align:middle; font-size:0.95rem; }
+        tbody tr:nth-child(even) td { background: #fbfdff; }
+
+        /* numeric columns: right align and tabular numbers for consistent widths */
+        .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+        .metric { font-weight:700; }
+        .positive { color: #056a44; }
+        .negative { color: #8b1d1d; }
+
+        /* phase header that appears inside the table */
+        .stage-header {
+            padding:14px 16px;
+            border-radius:8px;
+            background: linear-gradient(90deg,#3b82f6 0%, #7c3aed 100%);
+            margin:14px 0 10px 0;
+            font-weight:800;
+            color:white;
+            font-size:1rem;
+            box-shadow: 0 8px 28px rgba(59,130,246,0.08);
+            border-left:6px solid rgba(255,255,255,0.14);
+        }
+
+        /* inline phase summary row styling (applied to the td that spans the table) */
+        td.summary-box {
+            background: #f8fafc;
+            border-left: 6px solid #4f46e5;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(79,70,229,0.06);
+        }
+
+        .summary-box { background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:12px; }
+        /* positive / negative summary states */
+        .summary-positive { border-left-color: #059669; background: linear-gradient(90deg, rgba(6,182,129,0.04), rgba(6,182,129,0.02)); }
+        .summary-negative { border-left-color: #dc2626; background: linear-gradient(90deg, rgba(220,38,38,0.04), rgba(220,38,38,0.02)); }
+        .summary-positive .key-metric strong.positive { color:#065f46; }
+        .summary-negative .key-metric strong.negative { color:#7f1d1d; }
+        .key-metric { margin-right:14px; display:inline-flex; align-items:center; gap:8px; color:#0f172a; }
+
+        .rev-prebreakeven { 
+            background: #fffbeb; /* warmer yellow */
+            border-left: 4px solid #f59e0b; /* amber accent */
+            padding:6px 8px; 
+            border-radius:6px; 
+            color: #92400e; 
+            font-weight:700;
+        }
+        /* break-even month emphasis */
+        .rev-break { box-shadow: 0 4px 18px rgba(245,158,11,0.12); border-left-width:6px; }
+        .highlight td { background:#fbfdff; }
+
+        #all-error { display:none; }
+        @media print { .topbar, .btn { display:none; } }
+    </style>
+    <style>
+        /* summary size modes */
+        body.summary-compact td.summary-box { padding: 8px; font-size: 0.9rem; }
+        body.summary-compact .summary-box { padding: 8px; font-size: 0.9rem; }
+        body.summary-prominent td.summary-box { padding: 22px; font-size: 1.05rem; }
+        body.summary-prominent .summary-box { padding: 18px; font-size: 1.02rem; }
+        /* active state for toggle buttons */
+        .btn.toggled { background:#111827; color:white; }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="topbar">
+                <button class="btn active" id="btn-all">All in One</button>
+                <div style="flex:1"></div>
+                <button class="btn" id="btn-compact" title="Mostrar resumos compactos">Compact</button>
+                <button class="btn" id="btn-prominent" title="Mostrar resumos em destaque">Prominent</button>
+                <button class="btn" id="btn-print">Imprimir / Salvar PDF</button>
+            </div>
+
+            <div id="view-all">
+                <h1>All in One — Cenário</h1>
+                <div class="subtitle">Clientes All-in-One (lojas online) — inclui custo operacional por cliente (envios) de 60€/cliente</div>
+
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+                    <button class="btn" id="export-csv">Export CSV</button>
+                    <div style="flex:1"></div>
+                    <div class="key-metric">Custo Operação por Cliente: <strong>60 €</strong></div>
+                    <div class="key-metric">Ticket Médio: <strong>85.66 €</strong></div>
+                </div>
+
+                <div id="all-error" style="display:none; background:#ffe3e3; border-left:4px solid #e53e3e; padding:10px; margin-bottom:12px; border-radius:6px;">
+                    <strong>Erro:</strong> <span id="all-error-msg"></span>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <h3>Assumptions (editáveis)</h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <label>Ticket médio: <input id="ass-ticket" type="number" value="85.66" step="0.01"></label>
+                        <label>Custo op / cliente: <input id="ass-op" type="number" value="60" step="0.01"></label>
+                        <label>Custos fixos /m: <input id="ass-fixed" type="number" value="1250" step="1"></label>
+                        <label>Custos equipa /m: <input id="ass-team" type="number" value="6000" step="1"></label>
+                        <label>Equipa inicia em mês: <input id="ass-team-start" type="number" value="15" min="1" max="60"></label>
+                        <label>Investimento mensal (plataforma): <input id="ass-invest" type="number" value="14750" step="1"></label>
+                        <label>Investimento até mês: <input id="ass-invest-end" type="number" value="16" min="1" max="60"></label>
+                        <label>Marketing /m: <input id="ass-marketing" type="number" value="5000" step="1"></label>
+                        <label>Marketing start: <input id="ass-marketing-start" type="number" value="17" min="1" max="60"></label>
+                        <label>Marketing end: <input id="ass-marketing-end" type="number" value="22" min="1" max="60"></label>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mês</th>
+                            <th class="num">Clientes</th>
+                            <th class="num">Receita Mensal</th>
+                            <th class="num">Investimento</th>
+                            <th class="num">Custos Fixos</th>
+                            <th class="num">Custos Equipa</th>
+                            <th class="num">Marketing</th>
+                            <th class="num">Custos Operação</th>
+                            <th class="num">Total Custos</th>
+                            <th class="num">Resultado Mensal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-tbody"></tbody>
+                </table>
+                <div class="summary-box">
+                    <h3>Resumo All-in-One - 60 meses</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <span class="key-metric">Receita Total: <strong id="all-total-rev">-</strong></span>
+                        <span class="key-metric">Custos Operação Total: <strong id="all-total-op">-</strong></span>
+                        <span class="key-metric">Custos Fixos Total: <strong id="all-total-fixed">-</strong></span>
+                        <span class="key-metric">Custos Totais: <strong id="all-total-costs">-</strong></span>
+                        <span class="key-metric">Lucro Líquido Acumulado: <strong id="all-net">-</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        // Clean All-in-One generator + wiring
+        (function(){
+            const keypoints = [
+                {m:1, c:0}, {m:5, c:0}, {m:6, c:100}, {m:7, c:113}, {m:8, c:125}, {m:14, c:200},
+                {m:15, c:213}, {m:16, c:225}, {m:17, c:238}, {m:18, c:250}, {m:20, c:275}, {m:22, c:300},
+                {m:25, c:338}, {m:30, c:400}, {m:31, c:421}, {m:35, c:504}, {m:40, c:608}, {m:42, c:650},
+                {m:45, c:688}, {m:46, c:700}, {m:50, c:750}, {m:54, c:800}, {m:60, c:875}
+            ];
+
+            const phases = [
+                {start:1, end:16, title:'FASE 1: Desenvolvimento da Plataforma (M1-M16)'},
+                {start:17, end:30, title:'FASE 2: Aceleração e Marketing (M17-M30)'},
+                {start:31, end:45, title:'FASE 3: Crescimento Acelerado (M31-M45)'},
+                {start:46, end:60, title:'FASE 4: Maturidade e Alta Rentabilidade (M46-M60)'}
+            ];
+
+            function interpClients(month){
+                let left = keypoints[0];
+                let right = keypoints[keypoints.length-1];
+                for(let i=0;i<keypoints.length;i++){
+                    if(keypoints[i].m === month) return keypoints[i].c;
+                    if(keypoints[i].m < month) left = keypoints[i];
+                    if(keypoints[i].m > month){ right = keypoints[i]; break; }
+                }
+                if(month <= left.m) return left.c;
+                if(month >= right.m) return right.c;
+                const ratio = (month - left.m) / (right.m - left.m);
+                return Math.round(left.c + ratio * (right.c - left.c));
+            }
+
+            function fmt(v){ return Number(v).toLocaleString('pt-PT', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
+
+            const assumptions = {};
+            function readAssumptionsFromUI(){
+                const get = id => document.getElementById(id);
+                assumptions.ticket = parseFloat(get('ass-ticket').value) || 85.66;
+                assumptions.opPerClient = parseFloat(get('ass-op').value) || 60;
+                assumptions.fixed = parseFloat(get('ass-fixed').value) || 1250;
+                assumptions.teamCost = parseFloat(get('ass-team').value) || 6000;
+                assumptions.teamStart = parseInt(get('ass-team-start').value) || 15;
+                assumptions.investAmount = parseFloat(get('ass-invest').value) || 14750;
+                assumptions.investEnd = parseInt(get('ass-invest-end').value) || 16;
+                assumptions.marketingAmount = parseFloat(get('ass-marketing').value) || 5000;
+                assumptions.marketingStart = parseInt(get('ass-marketing-start').value) || 17;
+                assumptions.marketingEnd = parseInt(get('ass-marketing-end').value) || 22;
+            }
+
+            function showError(message){ const errBox = document.getElementById('all-error'); const errMsg = document.getElementById('all-error-msg'); if(errBox && errMsg){ errMsg.textContent = message; errBox.style.display = ''; } else console.error(message); }
+        function clearAllInOne(){ const tbody = document.getElementById('all-tbody'); if(tbody) tbody.innerHTML = ''; const errBox = document.getElementById('all-error'); if(errBox) errBox.style.display = 'none'; }
+
+            function runAllInOne(){
+                try{
+                    readAssumptionsFromUI(); clearAllInOne();
+                    const tbody = document.getElementById('all-tbody');
+                    const totalRevEl = document.getElementById('all-total-rev');
+                    const totalOpEl = document.getElementById('all-total-op');
+                    const totalFixedEl = document.getElementById('all-total-fixed');
+                    const totalCostsEl = document.getElementById('all-total-costs');
+                    const netEl = document.getElementById('all-net');
+
+                    const ticket = assumptions.ticket; const opPerClient = assumptions.opPerClient; const fixed = assumptions.fixed;
+                    let totalRev=0, totalOp=0, totalFixed=0, totalCosts=0, totalNet=0; let totalInvest=0, totalTeam=0, totalMarketing=0;
+                    const phaseAggs = phases.map(p => ({title:p.title, start:p.start, end:p.end, rev:0, invest:0, fixed:0, team:0, marketing:0, op:0, costs:0, net:0}));
+
+                    let cumulativeNet = 0; let breakEvenMonth = null;
+
+                    function insertPhaseHeader(title){
+                        const tr = document.createElement('tr');
+                        const td = document.createElement('td');
+                        td.colSpan = 10; td.className='stage-header'; td.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; td.style.color='white'; td.style.fontSize='16px';
+                        td.textContent = title; tr.appendChild(td); tbody.appendChild(tr);
+                    }
+
+                    for(let m=1;m<=60;m++){
+                        phases.forEach(p => { if(m===p.start) insertPhaseHeader(p.title); });
+                        const clients = interpClients(m);
+                        const revenue = +(clients * ticket).toFixed(2);
+                        const opCost = clients * opPerClient;
+                        const invest = (m>=1 && m<=assumptions.investEnd) ? assumptions.investAmount : 0;
+                        const teamCost = (m>=assumptions.teamStart) ? assumptions.teamCost : 0;
+                        const marketingCost = (m>=assumptions.marketingStart && m<=assumptions.marketingEnd) ? assumptions.marketingAmount : 0;
+                        const totalCost = fixed + opCost + invest + teamCost + marketingCost;
+                        const result = +(revenue - totalCost).toFixed(2);
+
+                        const cumBefore = cumulativeNet;
+                        const cumAfter = +(cumulativeNet + result).toFixed(2);
+                        let markRevenue = false;
+                        if(breakEvenMonth===null){ if(cumBefore<0) markRevenue=true; if(cumAfter>=0){ markRevenue=true; breakEvenMonth=m; } }
+                        cumulativeNet = cumAfter;
+
+                        totalRev += revenue; totalOp += opCost; totalFixed += fixed; totalInvest += invest; totalTeam += teamCost; totalMarketing += marketingCost; totalCosts += totalCost; totalNet += result;
+
+                        const phaseIndex = phases.findIndex(p => m>=p.start && m<=p.end);
+                        if(phaseIndex>=0){ const agg = phaseAggs[phaseIndex]; agg.rev+=revenue; agg.invest+=invest; agg.fixed+=fixed; agg.team+=teamCost; agg.marketing+=marketingCost; agg.op+=opCost; agg.costs+=totalCost; agg.net+=result; }
+
+                        const tr = document.createElement('tr'); if(m===1 || m%6===0) tr.classList.add('highlight');
+                        const resClass = result>0 ? 'positive' : (result<0 ? 'negative' : 'neutral');
+                        const isBreakMonth = (breakEvenMonth === m);
+                        // build revenue classes and tooltip depending on pre-break / break status
+                        const revStateClass = `${revenue>0 ? 'positive' : ''} ${markRevenue ? 'rev-prebreakeven' : ''} ${isBreakMonth ? 'rev-break' : ''}`.trim();
+                        const revTitle = isBreakMonth ? 'Mês de break-even — receita cobre os investimentos' : (markRevenue ? 'Receita antes do break-even' : '');
+                        tr.innerHTML = `
+                            <td class="metric">M${m}</td>
+                            <td class="num">${clients}</td>
+                            <td class="num ${revStateClass}" title="${revTitle}">${fmt(revenue)}</td>
+                            <td class="num">${fmt(invest)}</td>
+                            <td class="num">${fmt(fixed)}</td>
+                            <td class="num">${fmt(teamCost)}</td>
+                            <td class="num">${fmt(marketingCost)}</td>
+                            <td class="num">${fmt(opCost)}</td>
+                            <td class="num">${fmt(totalCost)}</td>
+                            <td class="num ${resClass}">${result>=0? '+' : ''}${fmt(result)}</td>
+                        `;
+                        tbody.appendChild(tr);
+
+                        // If this month is the end of a phase, insert an inline phase summary row right after it
+                        const phaseIdx = phases.findIndex(p => m === p.end);
+                        if(phaseIdx >= 0){
+                            const a = phaseAggs[phaseIdx];
+                            const summaryTr = document.createElement('tr');
+                            const td = document.createElement('td');
+                            td.colSpan = 10; td.style.padding = '10px';
+                            const stateClass = (a.net >= 0) ? 'summary-positive' : 'summary-negative';
+                            td.className = 'summary-box ' + stateClass;
+                            td.innerHTML = `
+                                <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+                                    <strong style="flex-basis:100%">${a.title} (M${a.start}-M${a.end})</strong>
+                                    <span class="key-metric">Receita: <strong>${fmt(a.rev)}</strong></span>
+                                    <span class="key-metric">Investimento: <strong>${fmt(a.invest)}</strong></span>
+                                    <span class="key-metric">Custos Fixos: <strong>${fmt(a.fixed)}</strong></span>
+                                    <span class="key-metric">Custos Equipa: <strong>${fmt(a.team)}</strong></span>
+                                    <span class="key-metric">Marketing: <strong>${fmt(a.marketing)}</strong></span>
+                                    <span class="key-metric">Custos Operação: <strong>${fmt(a.op)}</strong></span>
+                                    <span class="key-metric">Total Custos: <strong>${fmt(a.costs)}</strong></span>
+                                    <span class="key-metric">Lucro Líquido: <strong class="${a.net>=0? 'positive' : 'negative'}">${a.net>=0? '+' : ''}${fmt(a.net)}</strong></span>
+                                </div>
+                            `;
+                            summaryTr.appendChild(td);
+                            tbody.appendChild(summaryTr);
+                        }
+                    }
+
+                    // totals and summary
+                    totalRev = +totalRev.toFixed(2); totalOp = +totalOp.toFixed(2); totalFixed = +totalFixed.toFixed(2); totalInvest = +totalInvest.toFixed(2); totalTeam = +totalTeam.toFixed(2); totalMarketing = +totalMarketing.toFixed(2); totalCosts = +totalCosts.toFixed(2); totalNet = +totalNet.toFixed(2);
+                    if(totalRevEl) totalRevEl.textContent = fmt(totalRev);
+                    if(totalOpEl) totalOpEl.textContent = fmt(totalOp);
+                    if(totalFixedEl) totalFixedEl.textContent = fmt(totalFixed);
+                    if(totalCostsEl) totalCostsEl.textContent = fmt(totalCosts);
+                    if(netEl) netEl.textContent = (totalNet>=0? '+':'') + fmt(totalNet);
+
+                    // append extra totals
+                    if(totalCostsEl && totalCostsEl.parentElement){
+                        // remove previously appended extras (simple cleanup)
+                        Array.from(totalCostsEl.parentElement.querySelectorAll('.__extra')).forEach(n=>n.remove());
+                        const investEl = document.createElement('span'); investEl.className='key-metric __extra'; investEl.innerHTML = '<strong>Investimento Total:</strong> ' + fmt(totalInvest);
+                        const teamEl = document.createElement('span'); teamEl.className='key-metric __extra'; teamEl.innerHTML = '<strong>Custos Equipa Total:</strong> ' + fmt(totalTeam);
+                        const marketingEl = document.createElement('span'); marketingEl.className='key-metric __extra'; marketingEl.innerHTML = '<strong>Investimento Marketing Total:</strong> ' + fmt(totalMarketing);
+                        totalCostsEl.parentElement.appendChild(investEl); totalCostsEl.parentElement.appendChild(teamEl); totalCostsEl.parentElement.appendChild(marketingEl);
+                        const beSpan = document.createElement('span'); beSpan.className='key-metric __extra'; beSpan.innerHTML = '<strong>Break-Even:</strong> ' + (breakEvenMonth? ('Mês '+breakEvenMonth) : 'Não atingido nos 60 meses'); netEl.parentElement.appendChild(beSpan);
+                    }
+
+                    // (phase summaries are inserted inline immediately after the last month row)
+
+                    // prepare CSV export (assign, don't add multiple listeners)
+                    const exportBtn = document.getElementById('export-csv');
+                    if(exportBtn){
+                        exportBtn.onclick = function(){
+                            const rows = [['Mes','Clientes','Receita','Investimento','Custos Fixos','Custos Equipa','Marketing','Custos Operacao','Total Custos','Resultado']];
+                            for(let r=0;r<tbody.rows.length;r++){
+                                const cols = Array.from(tbody.rows[r].cells).map(td => td.textContent.replace(/\u00A0/g,' '));
+                                rows.push(cols);
+                            }
+                            const csv = rows.map(r=> r.map(c=> '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+                            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url; a.download = 'all-in-one-60-months.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+                        };
+                    }
+
+                } catch(err){ showError(err.message || String(err)); }
+            }
+
+            function updateTmsSummaries(){
+                try{
+                    readAssumptionsFromUI();
+                    const investTotal = assumptions.investAmount * assumptions.investEnd;
+                    const marketingTotal = assumptions.marketingAmount * Math.max(0, (assumptions.marketingEnd - assumptions.marketingStart + 1));
+                    const p = document.getElementById('tms-invest-platform');
+                    const p2 = document.getElementById('tms-invest-platform-final');
+                    const m = document.getElementById('tms-invest-marketing');
+                    const m2 = document.getElementById('tms-invest-marketing-final');
+                    if(p) p.innerHTML = '<strong>Investimento Plataforma:</strong> ' + fmt(investTotal);
+                    if(p2) p2.innerHTML = '<strong>Investimento Plataforma:</strong> ' + fmt(investTotal);
+                    if(m) m.innerHTML = '<strong>Investimento Marketing (M'+assumptions.marketingStart+'-M'+assumptions.marketingEnd+'):</strong> ' + fmt(marketingTotal);
+                    if(m2) m2.innerHTML = '<strong>Investimento Marketing:</strong> ' + fmt(marketingTotal);
+                } catch(e){ console.error(e); }
+            }
+
+            function debounce(fn, wait){ let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=> fn(...args), wait); }; }
+            const inputs = ['ass-ticket','ass-op','ass-fixed','ass-team','ass-team-start','ass-invest','ass-invest-end','ass-marketing','ass-marketing-start','ass-marketing-end'];
+            const debounced = debounce(()=>{ runAllInOne(); updateTmsSummaries(); }, 220);
+
+            document.addEventListener('DOMContentLoaded', ()=>{
+                inputs.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', debounced); });
+                // Only All-in-One view remains. Wire the All-in-One button to ensure it's active and visible.
+                const btnAll = document.getElementById('btn-all');
+                if(btnAll) btnAll.addEventListener('click', ()=>{ document.getElementById('view-all').style.display=''; btnAll.classList.add('active'); });
+                document.getElementById('btn-print').addEventListener('click', ()=> setTimeout(()=> window.print(), 100));
+
+                // Summary mode toggles: compact vs prominent (mutually exclusive)
+                const btnCompact = document.getElementById('btn-compact');
+                const btnProminent = document.getElementById('btn-prominent');
+                function setMode(mode){
+                    // mode: 'compact' | 'prominent' | null
+                    document.body.classList.remove('summary-compact','summary-prominent');
+                    if(btnCompact) btnCompact.classList.remove('toggled');
+                    if(btnProminent) btnProminent.classList.remove('toggled');
+                    if(mode === 'compact'){
+                        document.body.classList.add('summary-compact');
+                        if(btnCompact) btnCompact.classList.add('toggled');
+                    } else if(mode === 'prominent'){
+                        document.body.classList.add('summary-prominent');
+                        if(btnProminent) btnProminent.classList.add('toggled');
+                    }
+                }
+                if(btnCompact){ btnCompact.addEventListener('click', ()=>{
+                    const active = document.body.classList.contains('summary-compact');
+                    setMode(active ? null : 'compact');
+                }); }
+                if(btnProminent){ btnProminent.addEventListener('click', ()=>{
+                    const active = document.body.classList.contains('summary-prominent');
+                    setMode(active ? null : 'prominent');
+                }); }
+
+                // initial generation
+                runAllInOne(); updateTmsSummaries();
+            });
+
+        })();
+        </script>
+
+    </body>
+    </html>

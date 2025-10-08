@@ -1,0 +1,12 @@
+{
+  "name": "tms-investment-visual",
+  "version": "1.0.0",
+  "description": "Serve the investment stages HTML for local preview",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT"
+}
